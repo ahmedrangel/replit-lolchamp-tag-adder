@@ -2,24 +2,24 @@ import jp from "jsonpath";
 import express from "express";
 const server = express();
 
-server.all('/', (req, res) => {
-  res.setHeader('Content-Type', 'text/html');
-  res.write('<link href="https://fonts.googleapis.com/css?family=Roboto Condensed" rel="stylesheet"> <style> body {font-family: "Roboto Condensed";font-size: 22px;} <p>Hosting Active</p>');
+server.all("/", (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.write("<link href=\"https://fonts.googleapis.com/css?family=Roboto Condensed\" rel=\"stylesheet\"> <style> body {font-family: \"Roboto Condensed\";font-size: 22px;} <p>Hosting Active</p>");
   res.end();
 });
 
-async function LoLCurrentGame() {
+const LoLCurrentGame = async() => {
   //const test_id = "r8yqPkqpy-kJG35jl-QKZ83pWbUMJS5IP2qSyKR6tmrgt3PiZ_rHhYq0";
-  const lol_data = await fetch(`https://la2.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${process.env['ZIHNE_LOLID_LAS']}?api_key=${process.env['RIOT_KEY']}`)
+  const lol_data = await fetch(`https://la2.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${process.env["ZIHNE_LOLID_LAS"]}?api_key=${process.env["RIOT_KEY"]}`);
   //const lol_data = await fetch(`https://la1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${test_id}?api_key=${process.env['RIOT_KEY']}`)
   const { participants } = await lol_data.json();
-  const champion_data = await fetch(`https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/champion-summary.json`);
-  const data  = await champion_data.json();
+  const champion_data = await fetch("https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/es_mx/v1/champion-summary.json");
+  const data = await champion_data.json();
   const current_tags = await fetch(`${process.env["AHMED_WORKER"]}/tags/491738569`);
   let tags = await current_tags.text();
   tags = tags.split(",");
-  const coincidencia = tags.some(elem => jp.query(data, `$..[?(@.name)].alias`).includes(elem)); // true or false
-  const coincidencia_name = tags.filter(elem => jp.query(data, `$..[?(@.name)].alias`).includes(elem)); // Champ name coincidencia en tags y database
+  const coincidencia = tags.some(elem => jp.query(data, "$..[?(@.name)].alias").includes(elem)); // true or false
+  const coincidencia_name = tags.filter(elem => jp.query(data, "$..[?(@.name)].alias").includes(elem)); // Champ name coincidencia en tags y database
   if (participants == undefined) {
     if (coincidencia) {
       console.log("Hay coincidencia y no está en partida, se quita el tag coincidente. Hay Fetch");
@@ -36,7 +36,7 @@ async function LoLCurrentGame() {
     }
   } else {
     for (let i = 0; i < participants.length; i++) {
-      if (participants[i].summonerId == process.env['ZIHNE_LOLID_LAS']) {
+      if (participants[i].summonerId == process.env["ZIHNE_LOLID_LAS"]) {
         const championId = participants[i].championId;
         console.log(championId);
         const champion_name = String(jp.query(data, `$..[?(@.id==${championId})].alias`));
@@ -70,10 +70,10 @@ async function LoLCurrentGame() {
             }
             tags.unshift(champion_name);
           }
-        tags = tags.filter(elem => elem !== String(coincidencia_name));
-        tags = String(tags);
-        console.log(tags + "\n");
-        await fetch(`${process.env["AHMED_WORKER"]}/set_tags/491738569/tags:${tags}`);
+          tags = tags.filter(elem => elem !== String(coincidencia_name));
+          tags = String(tags);
+          console.log(tags + "\n");
+          await fetch(`${process.env["AHMED_WORKER"]}/set_tags/491738569/tags:${tags}`);
         }
       }
     }
@@ -82,11 +82,11 @@ async function LoLCurrentGame() {
     console.log("Detecting current game");
     LoLCurrentGame();
   }, 180000);
-}
+};
 
 LoLCurrentGame();
 
 const keepAlive = () => {
-  server.listen(3000, () => { console.log("Server is online!") });
-}
+  server.listen(3000, () => { console.log("Server is online!"); });
+};
 keepAlive();
