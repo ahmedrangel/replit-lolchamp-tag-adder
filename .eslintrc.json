@@ -24,6 +24,7 @@
     "arrow-spacing": ["error", { "before": true, "after": true }],
     "brace-style": ["error", "1tbs", { "allowSingleLine": true }],
     "no-multi-spaces": "error",
-    "space-before-blocks": "error"
+    "space-before-blocks": "error",
+    "no-trailing-spaces": "error"
   }
 }
